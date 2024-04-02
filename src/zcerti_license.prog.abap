@@ -1,13 +1,3 @@
-* Two licenses apply:
-*
-* GPL 3.0 License - Sources in the /mbt folder
-*                   See the details in /mbt/zcerti_mbt_license.abap
-*                   (= include program ZCERTI_MBT_LICENSE)
-*
-* MIT License     - All other sources
-*                   See the details below
-*
-*
 * MIT License
 *
 * Copyright (c) 2024 sandraros
