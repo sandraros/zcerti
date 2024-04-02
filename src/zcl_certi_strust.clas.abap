@@ -1,24 +1,21 @@
-"! Copy of /mbtools/cl_strust from
-"! https://github.com/Marc-Bernard-Tools/MBT-Package-Manager/blob/main/src/core/%23mbtools%23cl_strust.clas.abap
-"! with /mbtools/cx_exception replaced with zcx_certi_mbt
-CLASS zcl_certi_mbt_strust DEFINITION
+CLASS zcl_certi_strust DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
 ************************************************************************
-* Marc Bernard Tools - Trust Management
+* Trust Management
 *
 * Copyright 2021 Marc Bernard <https://marcbernardtools.com/>
-* SPDX-License-Identifier: GPL-3.0-only
+* SPDX-License-Identifier: MIT
 ************************************************************************
   PUBLIC SECTION.
 
+    CONSTANTS c_version TYPE string VALUE '1.0.0' ##NEEDED.
+
     TYPES:
-      ty_line        TYPE c LENGTH 80.
-    TYPES:
-      ty_certificate TYPE STANDARD TABLE OF ty_line WITH DEFAULT KEY.
-    TYPES:
+      ty_line        TYPE c LENGTH 80,
+      ty_certificate TYPE STANDARD TABLE OF ty_line WITH DEFAULT KEY,
       BEGIN OF ty_certattr,
         subject     TYPE string,
         issuer      TYPE string,
@@ -28,8 +25,7 @@ CLASS zcl_certi_mbt_strust DEFINITION
         datefrom    TYPE d,
         dateto      TYPE d,
         certificate TYPE xstring,
-      END OF ty_certattr.
-    TYPES:
+      END OF ty_certattr,
       ty_certattr_tt TYPE STANDARD TABLE OF ty_certattr WITH DEFAULT KEY.
 
     METHODS constructor
@@ -37,77 +33,89 @@ CLASS zcl_certi_mbt_strust DEFINITION
         !iv_context TYPE psecontext
         !iv_applic  TYPE ssfappl
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
     METHODS load
       IMPORTING
         !iv_create TYPE abap_bool DEFAULT abap_false
         !iv_id     TYPE ssfid OPTIONAL
         !iv_org    TYPE string OPTIONAL
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
     METHODS add
       IMPORTING
         !it_certificate TYPE ty_certificate
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
     METHODS get_own_certificate
       RETURNING
         VALUE(rs_result) TYPE ty_certattr
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
     METHODS get_certificate_list
       RETURNING
         VALUE(rt_result) TYPE ty_certattr_tt
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
     METHODS remove
       IMPORTING
         VALUE(iv_subject) TYPE string
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
     METHODS update
       RETURNING
         VALUE(rt_result) TYPE ty_certattr_tt
       RAISING
-        zcx_certi_mbt.
+        zcx_certi_strust.
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA mv_context TYPE psecontext .
-    DATA mv_applic TYPE ssfappl .
-    DATA mv_psename TYPE ssfpsename .
-    DATA mv_psetext TYPE strustappltxt  ##NEEDED.
-    DATA mv_distrib TYPE ssfflag .
-    DATA mv_tempfile TYPE localfile .
-    DATA mv_id TYPE ssfid .
-    DATA mv_profile TYPE ssfpab .
-    DATA mv_profilepw TYPE ssfpabpw .
-    DATA mv_cert_own TYPE xstring .
-    DATA mt_cert_new TYPE ty_certattr_tt .
-    DATA ms_cert_old TYPE ty_certattr .
-    DATA mt_cert_old TYPE ty_certattr_tt .
-    DATA mv_save TYPE abap_bool .
+    DATA:
+      mv_context   TYPE psecontext,
+      mv_applic    TYPE ssfappl,
+      mv_psename   TYPE ssfpsename,
+      mv_psetext   TYPE strustappltxt ##NEEDED,
+      mv_distrib   TYPE ssfflag,
+      mv_tempfile  TYPE localfile,
+      mv_id        TYPE ssfid,
+      mv_profile   TYPE ssfpab,
+      mv_profilepw TYPE ssfpabpw,
+      mv_cert_own  TYPE xstring,
+      mt_cert_new  TYPE ty_certattr_tt,
+      ms_cert_old  TYPE ty_certattr,
+      mt_cert_old  TYPE ty_certattr_tt,
+      mv_save      TYPE abap_bool.
 
     METHODS _create
       IMPORTING
         !iv_id  TYPE ssfid OPTIONAL
         !iv_org TYPE string OPTIONAL
       RAISING
-        zcx_certi_mbt .
+        zcx_certi_strust.
+
     METHODS _lock
       RAISING
-        zcx_certi_mbt .
+        zcx_certi_strust.
+
     METHODS _unlock
       RAISING
-        zcx_certi_mbt .
+        zcx_certi_strust.
+
     METHODS _save
       RAISING
-        zcx_certi_mbt .
+        zcx_certi_strust.
+
 ENDCLASS.
 
 
 
-CLASS zcl_certi_mbt_strust IMPLEMENTATION.
+CLASS zcl_certi_strust IMPLEMENTATION.
 
 
   METHOD add.
@@ -129,11 +137,11 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
           ASSIGN lv_certb64 TO <lv_data>.
           ASSERT sy-subrc = 0.
         ELSE.
-          zcx_certi_mbt=>raise( 'Inconsistent certificate format'(010) ).
+          zcx_certi_strust=>raise( 'Inconsistent certificate format'(010) ).
         ENDIF.
       CATCH cx_sy_regex_too_complex.
         " e.g. multiple PEM frames in file
-        zcx_certi_mbt=>raise( 'Inconsistent certificate format'(010) ).
+        zcx_certi_strust=>raise( 'Inconsistent certificate format'(010) ).
     ENDTRY.
 
     TRY.
@@ -160,7 +168,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
             OTHERS              = 5.
         IF sy-subrc <> 0.
           _unlock( ).
-          zcx_certi_mbt=>raise_t100( ).
+          zcx_certi_strust=>raise_t100( ).
         ENDIF.
 
         ls_cert_new-datefrom = ls_cert_new-validfrom(8).
@@ -169,7 +177,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
 
       CATCH cx_abap_x509_certificate.
         _unlock( ).
-        zcx_certi_mbt=>raise_t100( ).
+        zcx_certi_strust=>raise_t100( ).
     ENDTRY.
 
   ENDMETHOD.
@@ -192,7 +200,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         pse_not_found = 1
         OTHERS        = 2.
     IF sy-subrc <> 0.
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
   ENDMETHOD.
@@ -221,7 +229,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         OTHERS                = 6.
     IF sy-subrc <> 0.
       _unlock( ).
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
     LOOP AT lt_certlist ASSIGNING <lv_certlist>.
@@ -245,7 +253,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
           OTHERS              = 5.
       IF sy-subrc <> 0.
         _unlock( ).
-        zcx_certi_mbt=>raise_t100( ).
+        zcx_certi_strust=>raise_t100( ).
       ENDIF.
 
       ls_cert_old-datefrom = ls_cert_old-validfrom(8).
@@ -278,7 +286,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         OTHERS                = 6.
     IF sy-subrc <> 0.
       _unlock( ).
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
     CALL FUNCTION 'SSFC_PARSE_CERTIFICATE'
@@ -298,7 +306,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         OTHERS              = 5.
     IF sy-subrc <> 0.
       _unlock( ).
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
     ms_cert_old-datefrom = ms_cert_old-validfrom(8).
@@ -331,7 +339,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
           iv_id  = iv_id
           iv_org = iv_org ).
       ELSE.
-        zcx_certi_mbt=>raise_t100( ).
+        zcx_certi_strust=>raise_t100( ).
       ENDIF.
     ENDIF.
 
@@ -362,7 +370,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
           OTHERS                = 6.
       IF sy-subrc <> 0.
         _unlock( ).
-        zcx_certi_mbt=>raise_t100( ).
+        zcx_certi_strust=>raise_t100( ).
       ENDIF.
 
       mv_save = abap_true.
@@ -404,7 +412,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
               OTHERS                = 6.
           IF sy-subrc <> 0.
             _unlock( ).
-            zcx_certi_mbt=>raise_t100( ).
+            zcx_certi_strust=>raise_t100( ).
           ENDIF.
 
           mv_save = abap_true.
@@ -434,7 +442,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
           OTHERS              = 6.
       IF sy-subrc <> 0.
         _unlock( ).
-        zcx_certi_mbt=>raise_t100( ).
+        zcx_certi_strust=>raise_t100( ).
       ENDIF.
 
       mv_save = abap_true.
@@ -492,7 +500,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         ssf_unknown_error = 1
         OTHERS            = 2.
     IF sy-subrc <> 0.
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
     mv_tempfile = lv_psepath.
@@ -513,7 +521,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         internal_error  = 3
         OTHERS          = 4.
     IF sy-subrc <> 0.
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
   ENDMETHOD.
@@ -541,7 +549,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         OTHERS            = 4.
     IF sy-subrc <> 0.
       _unlock( ).
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
     lv_credname = mv_psename.
@@ -570,9 +578,9 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
     TRY.
         DELETE DATASET mv_tempfile.
       CATCH cx_sy_file_open.
-        zcx_certi_mbt=>raise( |Error deleting file { mv_tempfile }| ).
+        zcx_certi_strust=>raise( 'Error deleting file'(020) && | { mv_tempfile }| ).
       CATCH cx_sy_file_authority.
-        zcx_certi_mbt=>raise( |Not authorized to delete file { mv_tempfile }| ).
+        zcx_certi_strust=>raise( 'Not authorized to delete file'(030) && | { mv_tempfile }| ).
     ENDTRY.
 
     " Unlock PSE
@@ -585,7 +593,7 @@ CLASS zcl_certi_mbt_strust IMPLEMENTATION.
         internal_error  = 3
         OTHERS          = 4.
     IF sy-subrc <> 0.
-      zcx_certi_mbt=>raise_t100( ).
+      zcx_certi_strust=>raise_t100( ).
     ENDIF.
 
   ENDMETHOD.
