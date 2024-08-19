@@ -2,6 +2,8 @@
 
 Get HTTPS certificates from a Web site via the ICM trace (transaction code SMICM) and upload them to STRUST.
 
+EDIT: the ICM trace outputs the certificate contents in ABAP 7.52 but not in ABAP 7.58 (see more information and workaround in https://github.com/sandraros/zcerti/issues/6).
+
 Initial idea from [here](https://github.com/abapGit/abapGit/issues/6720#issuecomment-1873742763) to read the ICM trace and parse the certificates,
 and credits to [MBT here](https://github.com/abapGit/abapGit/issues/6720#issuecomment-1877376292) for uploading the certificates to STRUST.
 
