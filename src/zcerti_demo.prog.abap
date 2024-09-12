@@ -75,16 +75,16 @@ START-OF-SELECTION.
 
   IF p_strust = abap_true.
     TRY.
-        DATA(strust) = NEW zcl_certi_mbt_strust( iv_context = p_contxt
-                                              iv_applic  = p_applic ).
+        DATA(strust) = NEW zcl_certi_strust( iv_context = p_contxt
+                                             iv_applic  = p_applic ).
         " initialize MV_TEMPFILE
         strust->load( ).
         " initialize MV_PROFILE from MV_TEMPFILE
         strust->get_own_certificate( ).
         " get list only after MV_PROFILE is initialized
         DATA(certificates) = strust->get_certificate_list( ).
-      CATCH zcx_certi_mbt INTO DATA(mbt_error).
-        MESSAGE mbt_error TYPE 'I' DISPLAY LIKE 'E'.
+      CATCH zcx_certi_strust INTO DATA(strust_error).
+        MESSAGE strust_error TYPE 'I' DISPLAY LIKE 'E'.
         STOP.
     ENDTRY.
     TRY.
@@ -93,8 +93,8 @@ START-OF-SELECTION.
         ENDLOOP.
         strust->update( ).
         COMMIT WORK.
-      CATCH zcx_certi_mbt INTO mbt_error.
-        MESSAGE mbt_error TYPE 'I' DISPLAY LIKE 'E'.
+      CATCH zcx_certi_strust INTO strust_error.
+        MESSAGE strust_error TYPE 'I' DISPLAY LIKE 'E'.
         STOP.
     ENDTRY.
   ENDIF.
